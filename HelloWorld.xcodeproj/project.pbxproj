@@ -194,6 +194,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 1240;
 				LastUpgradeCheck = 1240;
+				ORGANIZATIONNAME = AntonAsmirko;
 				TargetAttributes = {
 					DB36C1D225F03C0800D550F4 = {
 						CreatedOnToolsVersion = 12.4;
