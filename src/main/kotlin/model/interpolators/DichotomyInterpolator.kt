@@ -1,21 +1,17 @@
 package model.interpolators
 
+import androidx.compose.ui.geometry.Offset
+
 class DichotomyInterpolator {
 
-    fun findExtremes(func: (arg: Double) -> Double, l: Double, r: Double, stepVal: Double): Pair<Double, Double> {
-        var min = Double.MAX_VALUE
-        var max = Double.MIN_VALUE
-        var l = l
-        while (l < r) {
-            val fnL = func(l)
-            if (fnL > max) {
-                max = fnL
-            }
-            if (fnL < min) {
-                min = fnL
-            }
-            l += stepVal
+    fun makePoints(l: Double, r: Double, numPoints: Int ,func: (arg: Double) -> Double): List<Offset>{
+        val points = mutableListOf<Offset>()
+        val step = (r - l) / numPoints
+        var cur = l
+        while (cur < r){
+            points.add(Offset(cur.toFloat(), func(cur).toFloat()))
+            cur += step
         }
-        return Pair(max, min)
+        return points
     }
 }
