@@ -15,24 +15,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.layout.WithConstraints
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import model.PlotData
-import model.interpolators.DichotomyInterpolator
+import model.interpolators.FunctionInterpolator
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.sin
 
 object Constants {
     const val POINT_RADIUS = 0.5f
-    const val L_BOUND = 1f
-    const val R_BOUND = 6f
-    const val NUM_POINTS = 100
     const val TITLE = "Optimizer Visualizer"
+    const val NONE_FUNC = "NONE"
+    const val BACK_BUTTON = "BACK"
+    const val SUBMIT = "ok"
 }
 
 enum class LeftViewType {
     METHOD,
-    FUNCTION
+    FUNCTION,
+    FUNCTION_INPUT
 }
 
 enum class MethodType {
@@ -40,8 +42,7 @@ enum class MethodType {
     DICHOTOMY,
     FIBONACCI,
     GOLDEN_SECTION,
-    PARABOLAS,
-    NONE
+    PARABOLAS
 }
 
 val methodsButtonsText = listOf(
@@ -53,17 +54,21 @@ val methodsButtonsText = listOf(
 )
 
 val functionsButtonsText = mapOf(
-    Pair("y = x", fun(x: Double): Double { return x }),
-    Pair("y = x^2", fun(x: Double): Double { return x.pow(2.0) }),
-    Pair("y = x^3", fun(x: Double): Double { return x.pow(3.0) }),
-    Pair("y = sin(x)", fun(x: Double): Double { return sin(x) }),
-    Pair("y = log2(x)", fun(x: Double): Double { return log2(x) })
+    Pair("y = x", fun(x: Float): Float { return x }),
+    Pair("y = x^2", fun(x: Float): Float { return x.pow(2f) }),
+    Pair("y = x^3", fun(x: Float): Float { return x.pow(3f) }),
+    Pair("y = sin(x)", fun(x: Float): Float { return sin(x) }),
+    Pair("y = log2(x)", fun(x: Float): Float { return log2(x) })
 )
 
 fun main() = Window(title = Constants.TITLE) {
     MaterialTheme {
         var leftViewType by remember { mutableStateOf(LeftViewType.METHOD) }
-        var func by remember { mutableStateOf("none") }
+        var func by remember { mutableStateOf(Constants.NONE_FUNC) }
+        var lBound by remember { mutableStateOf("") }
+        var rBound by remember { mutableStateOf("") }
+        var numBlobs by remember { mutableStateOf("") }
+        var functionDrawingPermitted by remember { mutableStateOf(false) }
         Row(
             modifier = Modifier
                 .background(color = Color(0xff795548))
@@ -75,23 +80,73 @@ fun main() = Window(title = Constants.TITLE) {
                     .background(color = Color(0xff4b2c20))
                     .fillMaxHeight().border(border = BorderStroke(1.dp, color = Color.White))
             ) {
-                if (leftViewType == LeftViewType.METHOD) {
-                    methodsButtonsText.forEach {
-                        buttonInBox(it.first) {
-                            leftViewType = it
+                when (leftViewType) {
+                    LeftViewType.METHOD -> {
+                        methodsButtonsText.forEach {
+                            buttonInBox(it.first) {
+                                leftViewType = it
+                            }
                         }
                     }
-                } else if (leftViewType == LeftViewType.FUNCTION) {
-                    buttonInBox("Back") {
-                        leftViewType = LeftViewType.METHOD
-                        func = "none"
+                    LeftViewType.FUNCTION -> {
+                        buttonInBox(Constants.BACK_BUTTON) {
+                            leftViewType = LeftViewType.METHOD
+                            func = Constants.NONE_FUNC
+                        }
+                        functionsButtonsText.forEach { pair ->
+                            buttonInBox(pair.key) {
+                                func = pair.key
+                                leftViewType = LeftViewType.FUNCTION_INPUT
+                            }
+                        }
                     }
-                    functionsButtonsText.forEach { pair ->
-                        buttonInBox(pair.key) { func = pair.key }
+                    LeftViewType.FUNCTION_INPUT -> {
+                        buttonInBox(Constants.BACK_BUTTON) {
+                            leftViewType = LeftViewType.FUNCTION
+                            func = Constants.NONE_FUNC
+                            numBlobs = ""
+                            lBound = ""
+                            rBound = ""
+                        }
+                        fieldSpacer()
+                        Text(text = func)
+                        fieldSpacer()
+                        OutlinedTextField(
+                            value = "",
+                            inactiveColor = Color(0xff64dd17),
+                            activeColor = Color(0xff1faa00),
+                            onValueChange = {
+                                lBound += it
+                            },
+
+                            label = { Text(lBound) })
+                        fieldSpacer()
+                        OutlinedTextField(
+                            value = "",
+                            inactiveColor = Color(0xff64dd17),
+                            activeColor = Color(0xff1faa00),
+                            onValueChange = {
+                                rBound += it
+                            },
+                            label = { Text(rBound) })
+                        fieldSpacer()
+                        OutlinedTextField(
+                            value = "",
+                            inactiveColor = Color(0xff64dd17),
+                            activeColor = Color(0xff1faa00),
+                            onValueChange = {
+                                numBlobs += it
+                            },
+                            label = { Text(numBlobs) }
+                        )
+                        fieldSpacer()
+                        buttonInBox(Constants.SUBMIT) {
+                            functionDrawingPermitted = validateInput(lBound, rBound, numBlobs)
+                        }
                     }
                 }
             }
-            if (func != "none") {
+            if (func != Constants.NONE_FUNC && functionDrawingPermitted) {
                 WithConstraints(
                     modifier = Modifier
                         .weight(0.8f)
@@ -99,33 +154,63 @@ fun main() = Window(title = Constants.TITLE) {
                 ) {
                     val boxWidth = constraints.maxWidth
                     val boxHeight = constraints.maxHeight
-                    val dichotomyInterpolator = DichotomyInterpolator()
-                    val points =
-                        dichotomyInterpolator.makePoints(
-                            Constants.L_BOUND.toDouble(),
-                            Constants.R_BOUND.toDouble(),
-                            Constants.NUM_POINTS,
+                    val functionInterpolator = FunctionInterpolator()
+                    val lBF = lBound.toFloat()
+                    val rBF = rBound.toFloat()
+                    val (message, points) =
+                        functionInterpolator.makePoints(
+                            lBF,
+                            rBF,
+                            numBlobs.toInt(),
                             functionsButtonsText[func]!!
                         )
-                    val minFnVal: Float = points.minByOrNull { it.y }?.y ?: -100f
-                    val maxFnVal = points.maxByOrNull { it.y }?.y ?: 100f
-                    val samplePlotData = PlotData(Constants.L_BOUND, Constants.R_BOUND, points, minFnVal, maxFnVal)
-                    plotView(samplePlotData, boxHeight, boxWidth)
+                    if (message == FunctionInterpolator.MESSAGE_OK) {
+                        val minFnVal: Float = points.minByOrNull { it.y }?.y ?: -100f
+                        val maxFnVal = points.maxByOrNull { it.y }?.y ?: 100f
+                        val samplePlotData =
+                            PlotData(lBF, rBF, points, minFnVal, maxFnVal)
+                        plotView(samplePlotData, boxHeight, boxWidth)
+                    } else {
+                        textCentred(
+                            modifier = Modifier
+                                .align(alignment = Alignment.CenterVertically)
+                                .weight(0.8f),
+                            message
+                        )
+                    }
                 }
             } else {
-                Column(
+                textCentred(
                     Modifier
                         .align(alignment = Alignment.CenterVertically)
-                        .weight(0.8f)
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(30.dp),
-                        text = "Something will be drawn here after you chose method and function"
-                    )
-                }
+                        .weight(0.8f),
+                    "Something will be drawn here after you chose method and function"
+                )
             }
         }
+    }
+}
+
+@Composable
+fun fieldSpacer() {
+    Spacer(modifier = Modifier.padding(7.dp))
+}
+
+fun validateInput(lBound: String, rBound: String, numOfBlobs: String): Boolean {
+    return true
+}
+
+@Composable
+fun textCentred(
+    modifier: Modifier,
+    message: String
+) {
+    Column(modifier) {
+        Text(
+            modifier = Modifier
+                .padding(30.dp),
+            text = message
+        )
     }
 }
 
@@ -174,7 +259,7 @@ fun plotView(plotData: PlotData, height: Int, width: Int) {
     Canvas(modifier = Modifier, onDraw = {
         this.drawContext.canvas.apply {
             save()
-            val scale = prepareYAxis(
+            val scale = prepareAxis(
                 plotData.minFnVal,
                 plotData.maxFnVal,
                 height.toFloat(),
@@ -189,7 +274,13 @@ fun plotView(plotData: PlotData, height: Int, width: Int) {
                 scale.first,
                 scale.second
             )
-            drawPoints(plotData.points, Constants.POINT_RADIUS, plotData.lBound, plotData.minFnVal, scale.first, paint)
+            drawPoints(
+                plotData.points,
+                Constants.POINT_RADIUS,
+                plotData.lBound,
+                plotData.minFnVal,
+                scale.first, paint
+            )
             restore()
         }
     })
@@ -251,7 +342,7 @@ fun Canvas.drawPoints(
     }
 }
 
-fun Canvas.prepareYAxis(
+fun Canvas.prepareAxis(
     minFnVal: Float,
     maxFnVal: Float,
     height: Float,

@@ -2,7 +2,7 @@ package model
 
 import androidx.compose.ui.geometry.Offset
 
-data class PlotData(
+data class PlotData (
     var lBound: Float,
     var rBound: Float,
     var points: List<Offset>,
