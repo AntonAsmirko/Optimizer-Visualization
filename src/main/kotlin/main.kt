@@ -10,15 +10,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.layout.WithConstraints
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import model.PlotData
 import model.interpolators.FunctionInterpolator
+import java.awt.image.BufferedImage
+import java.io.File
+import javax.imageio.ImageIO
+import javax.swing.Icon
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.sin
@@ -58,10 +59,13 @@ val functionsButtonsText = mapOf(
     Pair("y = x^2", fun(x: Float): Float { return x.pow(2f) }),
     Pair("y = x^3", fun(x: Float): Float { return x.pow(3f) }),
     Pair("y = sin(x)", fun(x: Float): Float { return sin(x) }),
-    Pair("y = log2(x)", fun(x: Float): Float { return log2(x) })
+    Pair("y = log2(x)", fun(x: Float): Float { return log2(x) }),
+    Pair("y = x^2 * cos(x)", fun(x: Float): Float {return x.pow(2f) * sin(x)})
 )
 
-fun main() = Window(title = Constants.TITLE) {
+val appImg: BufferedImage = ImageIO.read(File("./img/appIcon.png"))
+
+fun main() = Window(title = Constants.TITLE, icon = appImg) {
     MaterialTheme {
         var leftViewType by remember { mutableStateOf(LeftViewType.METHOD) }
         var func by remember { mutableStateOf(Constants.NONE_FUNC) }
