@@ -19,13 +19,12 @@ import model.interpolators.FunctionInterpolator
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
-import javax.swing.Icon
 import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.sin
 
 object Constants {
-    const val POINT_RADIUS = 0.5f
+    const val POINT_RADIUS = 0.005f
     const val TITLE = "Optimizer Visualizer"
     const val NONE_FUNC = "NONE"
     const val BACK_BUTTON = "BACK"
@@ -282,7 +281,9 @@ fun plotView(plotData: PlotData, height: Int, width: Int) {
                 Constants.POINT_RADIUS,
                 plotData.lBound,
                 plotData.minFnVal,
-                scale.first, paint
+                scale.first,
+                scale.second,
+                paint
             )
             restore()
         }
@@ -319,9 +320,12 @@ fun Canvas.drawPoints(
     radius: Float,
     lBound: Float,
     minFnVal: Float,
-    scale: Float,
+    scaleX: Float,
+    scaleY: Float,
     paint: Paint
 ) {
+    save()
+    scale(1 / scaleX, 1 / scaleY)
     val strokeWidthConst = 5f
     val sorted = points.sortedWith(Comparator { o1, o2 ->
         return@Comparator when {
@@ -333,16 +337,17 @@ fun Canvas.drawPoints(
     var prevOffset: Offset? = null
     paint.apply {
         color = Color(0xff64dd17)
-        strokeWidth = strokeWidthConst / scale
+        strokeWidth = strokeWidthConst
     }
     for (i in sorted.indices) {
-        val curOffset = Offset(sorted[i].x - lBound, sorted[i].y - minFnVal)
-        this.drawCircle(curOffset, radius / scale, paint)
+        val curOffset = Offset((sorted[i].x - lBound) * scaleX, (sorted[i].y - minFnVal) * scaleY)
+        this.drawCircle(curOffset, radius, paint)
         if (prevOffset != null) {
             this.drawLine(prevOffset, curOffset, paint)
         }
         prevOffset = curOffset
     }
+    restore()
 }
 
 fun Canvas.prepareAxis(
