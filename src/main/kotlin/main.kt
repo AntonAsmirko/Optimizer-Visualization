@@ -20,13 +20,14 @@ import model.interpolators.DichotomyInterpolator
 import kotlin.math.pow
 
 object Constants {
-    const val POINT_RADIUS = 4f
+    const val POINT_RADIUS = 0.5f
     const val L_BOUND = -50f
     const val R_BOUND = 0f
-    const val NUM_POINTS = 100
+    const val NUM_POINTS = 200
 }
 
 val buttonsText = listOf("Brent", "Dichotomy", "Fibonacci", "Golden Section", "Parabolas")
+
 val dichotomyInterpolator = DichotomyInterpolator()
 val points =
     dichotomyInterpolator.makePoints(Constants.L_BOUND.toDouble(), Constants.R_BOUND.toDouble(), Constants.NUM_POINTS) {
@@ -103,16 +104,10 @@ fun buttonInBox(text: String) {
 
 @Composable
 fun plotView(plotData: PlotData, height: Int, width: Int) {
-    val paint = remember {
-        Paint()
-            .apply {
-                color = Color.Red
-                strokeWidth = 1f
-            }
-    }
+    val paint = remember { Paint() }
     Canvas(modifier = Modifier, onDraw = {
         this.drawContext.canvas.apply {
-            prepareYAxis(
+            val scale = prepareYAxis(
                 plotData.minFnVal,
                 plotData.maxFnVal,
                 height.toFloat(),
@@ -120,38 +115,48 @@ fun plotView(plotData: PlotData, height: Int, width: Int) {
                 plotData.lBound,
                 plotData.rBound
             )
-            drawGrid(paint, height.toFloat(), width.toFloat())
-            drawPoints(plotData.points, Constants.POINT_RADIUS, paint)
-            scale(1.5f,1.5f)
+            drawGrid(
+                paint,
+                plotData.maxFnVal - plotData.minFnVal,
+                plotData.rBound - plotData.lBound,
+                scale.first,
+                scale.second
+            )
+            drawPoints(plotData.points, Constants.POINT_RADIUS, plotData.lBound, plotData.minFnVal, scale.first, paint)
         }
     })
 }
 
-fun Canvas.drawGrid(paint: Paint, height: Float, width: Float){
-    val step = 50f
+fun Canvas.drawGrid(paint: Paint, height: Float, width: Float, scaleX: Float, scaleY: Float) {
+    val stepX = 30f / scaleX
+    val stepY = 30f / scaleY
     paint.apply {
         color = Color(0xff1faa00)
-        strokeWidth = 1f
+        strokeWidth = 1f / scaleX
     }
-    var curHeight = height / 2
-    while (curHeight > -1 * height / 2) {
-        drawLine(Offset(0f, 0f + curHeight), Offset(width / 2f, 0f + curHeight), paint)
-        drawLine(Offset(0f, 0f + curHeight), Offset(-1 * width / 2f, 0f + curHeight), paint)
-        curHeight -= step
+    var curHeight = 0f
+    while (curHeight < height / 2) {
+        drawLine(Offset(0f, 0f + curHeight), Offset(width, 0f + curHeight), paint)
+        if (curHeight > 0f) drawLine(Offset(0f, 0f + -curHeight), Offset(width, -curHeight), paint)
+        curHeight += stepY
     }
+    paint.strokeWidth = 1f / scaleY
     var curWidth = 0f
-    while (curWidth < width / 2){
+    while (curWidth < width) {
         drawLine(Offset(curWidth, height / 2), Offset(curWidth, -1 * height / 2), paint)
-        drawLine(Offset(-curWidth, height / 2), Offset(-curWidth, -1 * height / 2), paint)
-        curWidth += step
+        curWidth += stepX
     }
 }
 
 fun Canvas.drawPoints(
     points: List<Offset>,
     radius: Float,
+    lBound: Float,
+    minFnVal: Float,
+    scale: Float,
     paint: Paint
 ) {
+    val strokeWidthConst = 5f
     val sorted = points.sortedWith(Comparator { o1, o2 ->
         return@Comparator when {
             o1.x < o2.x -> -1
@@ -160,12 +165,13 @@ fun Canvas.drawPoints(
         }
     }).toTypedArray()
     var prevOffset: Offset? = null
+    paint.apply {
+        color = Color(0xff64dd17)
+        strokeWidth = strokeWidthConst / scale
+    }
     for (i in sorted.indices) {
-        val curOffset = Offset(sorted[i].x, sorted[i].y)
-        this.drawCircle(curOffset, radius, paint.apply {
-            color = Color(0xff64dd17)
-            strokeWidth = 7f
-        })
+        val curOffset = Offset(sorted[i].x - lBound, sorted[i].y - minFnVal)
+        this.drawCircle(curOffset, radius / scale, paint)
         if (prevOffset != null) {
             this.drawLine(prevOffset, curOffset, paint)
         }
@@ -180,9 +186,10 @@ fun Canvas.prepareYAxis(
     width: Float,
     lBound: Float,
     rBound: Float
-) {
-    this.translate(width / 2f - lBound, height / 2f)
-    this.scale(1f, -1f)
-    //this.translate(lBound, 0f)
-    //this.scale((rBound - lBound) / width, (maxFnVal - minFnVal) / height)
+): Pair<Float, Float> {
+    val scaleX = width / (rBound - lBound)
+    val scaleY = width / (maxFnVal - minFnVal)
+    translate(0f, height / 2f)
+    scale(scaleX, -scaleY)
+    return Pair(scaleX, scaleY)
 }
