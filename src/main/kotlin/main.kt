@@ -65,9 +65,10 @@ fun main() = Window(title = Constants.TITLE) {
     MaterialTheme {
         var leftViewType by remember { mutableStateOf(LeftViewType.METHOD) }
         var func by remember { mutableStateOf(Constants.NONE_FUNC) }
+        var numBlobs by remember { mutableStateOf("") }
         var lBound by remember { mutableStateOf("") }
         var rBound by remember { mutableStateOf("") }
-        var numBlobs by remember { mutableStateOf("") }
+        var functionInterpolator by remember{ mutableStateOf(FunctionInterpolator()) }
         var functionDrawingPermitted by remember { mutableStateOf(false) }
         Row(
             modifier = Modifier
@@ -104,6 +105,7 @@ fun main() = Window(title = Constants.TITLE) {
                         buttonInBox(Constants.BACK_BUTTON) {
                             leftViewType = LeftViewType.FUNCTION
                             func = Constants.NONE_FUNC
+                            functionDrawingPermitted = false
                             numBlobs = ""
                             lBound = ""
                             rBound = ""
@@ -154,13 +156,10 @@ fun main() = Window(title = Constants.TITLE) {
                 ) {
                     val boxWidth = constraints.maxWidth
                     val boxHeight = constraints.maxHeight
-                    val functionInterpolator = FunctionInterpolator()
-                    val lBF = lBound.toFloat()
-                    val rBF = rBound.toFloat()
                     val (message, points) =
                         functionInterpolator.makePoints(
-                            lBF,
-                            rBF,
+                            lBound.toFloat(),
+                            rBound.toFloat(),
                             numBlobs.toInt(),
                             functionsButtonsText[func]!!
                         )
@@ -168,7 +167,7 @@ fun main() = Window(title = Constants.TITLE) {
                         val minFnVal: Float = points.minByOrNull { it.y }?.y ?: -100f
                         val maxFnVal = points.maxByOrNull { it.y }?.y ?: 100f
                         val samplePlotData =
-                            PlotData(lBF, rBF, points, minFnVal, maxFnVal)
+                            PlotData(lBound.toFloat(), rBound.toFloat(), points, minFnVal, maxFnVal)
                         plotView(samplePlotData, boxHeight, boxWidth)
                     } else {
                         textCentred(
