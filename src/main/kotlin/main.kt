@@ -1,6 +1,5 @@
 import androidx.compose.desktop.Window
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -9,7 +8,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.layout.WithConstraints
@@ -77,83 +75,104 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
         var numBlobs by remember { mutableStateOf("") }
         var lBound by remember { mutableStateOf("") }
         var rBound by remember { mutableStateOf("") }
-        var functionInterpolator by remember { mutableStateOf(FunctionInterpolator()) }
+        val functionInterpolator by remember { mutableStateOf(FunctionInterpolator()) }
         var functionDrawingPermitted by remember { mutableStateOf(false) }
+        var message: String? = null
+        var points: List<Offset>?
+        var cursorPosition by remember { mutableStateOf<Offset?>(null) }
+        var leftBarWidth: Int? = null
         Row(
             modifier = Modifier
                 .background(color = Color(0xff795548))
                 .fillMaxHeight()
+                .pointerMoveFilter(onMove = {
+                    if (func != Constants.NONE_FUNC
+                        && functionDrawingPermitted
+                        && message == FunctionInterpolator.MESSAGE_OK
+                    ) {
+                        cursorPosition = it
+                    }
+                    true
+                })
         ) {
-            Column(
+            WithConstraints(
                 modifier = Modifier
+                    .fillMaxHeight()
                     .weight(0.2f)
-                    .background(color = Color(0xff4b2c20))
-                    .fillMaxHeight().border(border = BorderStroke(1.dp, color = Color.White))
-                    .verticalScroll(rememberScrollState())
             ) {
-                when (leftViewType) {
-                    LeftViewType.METHOD -> {
-                        methodsButtonsText.forEach {
-                            buttonInBox(it.first) {
-                                leftViewType = it
+                leftBarWidth = this.constraints.maxWidth
+                Column(
+                    modifier = Modifier
+                        .background(color = Color(0xff4b2c20))
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                        .border(border = BorderStroke(1.dp, color = Color.White))
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    when (leftViewType) {
+                        LeftViewType.METHOD -> {
+                            methodsButtonsText.forEach {
+                                buttonInBox(it.first) {
+                                    leftViewType = it
+                                }
                             }
                         }
-                    }
-                    LeftViewType.FUNCTION -> {
-                        buttonInBox(Constants.BACK_BUTTON) {
-                            leftViewType = LeftViewType.METHOD
-                            func = Constants.NONE_FUNC
-                        }
-                        functionsButtonsText.forEach { pair ->
-                            buttonInBox(pair.key) {
-                                func = pair.key
-                                leftViewType = LeftViewType.FUNCTION_INPUT
+                        LeftViewType.FUNCTION -> {
+                            buttonInBox(Constants.BACK_BUTTON) {
+                                leftViewType = LeftViewType.METHOD
+                                func = Constants.NONE_FUNC
+                            }
+                            functionsButtonsText.forEach { pair ->
+                                buttonInBox(pair.key) {
+                                    func = pair.key
+                                    leftViewType = LeftViewType.FUNCTION_INPUT
+                                }
                             }
                         }
-                    }
-                    LeftViewType.FUNCTION_INPUT -> {
-                        buttonInBox(Constants.BACK_BUTTON) {
-                            leftViewType = LeftViewType.FUNCTION
-                            func = Constants.NONE_FUNC
-                            functionDrawingPermitted = false
-                            numBlobs = ""
-                            lBound = ""
-                            rBound = ""
-                        }
-                        fieldSpacer()
-                        Text(text = func)
-                        fieldSpacer()
-                        OutlinedTextField(
-                            value = "",
-                            inactiveColor = Color(0xff64dd17),
-                            activeColor = Color(0xff1faa00),
-                            onValueChange = {
-                                lBound += it
-                            },
+                        LeftViewType.FUNCTION_INPUT -> {
+                            buttonInBox(Constants.BACK_BUTTON) {
+                                leftViewType = LeftViewType.FUNCTION
+                                func = Constants.NONE_FUNC
+                                functionDrawingPermitted = false
+                                numBlobs = ""
+                                lBound = ""
+                                rBound = ""
+                            }
+                            fieldSpacer()
+                            Text(text = func)
+                            fieldSpacer()
+                            OutlinedTextField(
+                                value = "",
+                                inactiveColor = Color(0xff64dd17),
+                                activeColor = Color(0xff1faa00),
+                                onValueChange = {
+                                    lBound += it
+                                },
 
-                            label = { Text(lBound) })
-                        fieldSpacer()
-                        OutlinedTextField(
-                            value = "",
-                            inactiveColor = Color(0xff64dd17),
-                            activeColor = Color(0xff1faa00),
-                            onValueChange = {
-                                rBound += it
-                            },
-                            label = { Text(rBound) })
-                        fieldSpacer()
-                        OutlinedTextField(
-                            value = "",
-                            inactiveColor = Color(0xff64dd17),
-                            activeColor = Color(0xff1faa00),
-                            onValueChange = {
-                                numBlobs += it
-                            },
-                            label = { Text(numBlobs) }
-                        )
-                        fieldSpacer()
-                        buttonInBox(Constants.SUBMIT) {
-                            functionDrawingPermitted = validateInput(lBound, rBound, numBlobs)
+                                label = { Text(lBound) })
+                            fieldSpacer()
+                            OutlinedTextField(
+                                value = "",
+                                inactiveColor = Color(0xff64dd17),
+                                activeColor = Color(0xff1faa00),
+                                onValueChange = {
+                                    rBound += it
+                                },
+                                label = { Text(rBound) })
+                            fieldSpacer()
+                            OutlinedTextField(
+                                value = "",
+                                inactiveColor = Color(0xff64dd17),
+                                activeColor = Color(0xff1faa00),
+                                onValueChange = {
+                                    numBlobs += it
+                                },
+                                label = { Text(numBlobs) }
+                            )
+                            fieldSpacer()
+                            buttonInBox(Constants.SUBMIT) {
+                                functionDrawingPermitted = validateInput(lBound, rBound, numBlobs)
+                            }
                         }
                     }
                 }
@@ -163,28 +182,34 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
                     modifier = Modifier
                         .weight(0.8f)
                         .fillMaxWidth()
+
                 ) {
                     val boxWidth = constraints.maxWidth
                     val boxHeight = constraints.maxHeight
-                    val (message, points) =
+                    val res =
                         functionInterpolator.makePoints(
                             lBound.toFloat(),
                             rBound.toFloat(),
                             numBlobs.toInt(),
                             functionsButtonsText[func]!!
                         )
+                    message = res.first
+                    points = res.second
                     if (message == FunctionInterpolator.MESSAGE_OK) {
-                        val minFnVal: Float = points.minByOrNull { it.y }?.y ?: -100f
-                        val maxFnVal = points.maxByOrNull { it.y }?.y ?: 100f
+                        val minFnVal: Float = points!!.minByOrNull { it.y }?.y ?: -100f
+                        val maxFnVal = points!!.maxByOrNull { it.y }?.y ?: 100f
                         val samplePlotData =
-                            PlotData(lBound.toFloat(), rBound.toFloat(), points, minFnVal, maxFnVal)
-                        plotView(samplePlotData, boxHeight, boxWidth)
+                            PlotData(lBound.toFloat(), rBound.toFloat(), points!!, minFnVal, maxFnVal)
+                        cursorPosition = checkCursorPosition(cursorPosition, leftBarWidth!!.toFloat())
+                        plotView(samplePlotData, boxHeight, boxWidth, cursorPosition?.let {
+                            Offset(it.x - (leftBarWidth ?: 0), it.y)
+                        })
                     } else {
                         textCentred(
                             modifier = Modifier
                                 .align(alignment = Alignment.CenterVertically)
                                 .weight(0.8f),
-                            message
+                            message!!
                         )
                     }
                 }
@@ -198,6 +223,15 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
             }
         }
     }
+}
+
+fun checkCursorPosition(cursorPosition: Offset?, leftBarWidth: Float): Offset? {
+    cursorPosition?.let {
+        if (it.y > leftBarWidth) {
+            return it
+        }
+    }
+    return null
 }
 
 @Composable
@@ -263,35 +297,56 @@ fun buttonInBox(
 }
 
 @Composable
-fun plotView(plotData: PlotData, height: Int, width: Int) {
-    val paint = remember { Paint() }
+fun plotView(
+    plotData: PlotData,
+    height: Int,
+    width: Int,
+    cursorPosition: Offset?
+) {
+    val paint by remember { mutableStateOf(Paint()) }
+    val path by remember { mutableStateOf(Path()) }
     Canvas(modifier = Modifier, onDraw = {
         this.drawContext.canvas.apply {
             save()
-            val scale = prepareAxis(
-                plotData.minFnVal,
-                plotData.maxFnVal,
-                height.toFloat(),
-                width.toFloat(),
-                plotData.lBound,
-                plotData.rBound
-            )
-            drawGrid(
-                paint,
-                height.toFloat(),
-                width.toFloat(),
-                scale.first,
-                scale.second
-            )
-            drawPoints(
-                plotData.points,
-                Constants.POINT_RADIUS,
-                plotData.lBound,
-                plotData.minFnVal,
-                scale.first,
-                scale.second,
-                paint
-            )
+            val scaleX = 1f
+            val scaleY = 1f
+//            val (scaleX, scaleY) = prepareAxis(
+//                plotData.minFnVal,
+//                plotData.maxFnVal,
+//                height.toFloat(),
+//                width.toFloat(),
+//                plotData.lBound,
+//                plotData.rBound
+//            )
+//            drawGrid(
+//                paint,
+//                height.toFloat(),
+//                width.toFloat(),
+//                scaleX,
+//                scaleY
+//            )
+//            drawPoints(
+//                plotData.points,
+//                Constants.POINT_RADIUS,
+//                plotData.lBound,
+//                plotData.minFnVal,
+//                scaleX,
+//                scaleY,
+//                paint
+//            )
+            cursorPosition?.let {
+                drawLocationMarker(
+                    path,
+                    paint,
+                    it.x,
+                    it.y,
+                    25f,
+                    scaleX,
+                    scaleY,
+                    height.toFloat()
+                )
+            }
+            drawCircle(Offset(0f, 0f), 50f, paint)
             restore()
         }
     })
