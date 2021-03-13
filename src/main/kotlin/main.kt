@@ -1,15 +1,15 @@
 import androidx.compose.desktop.Window
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.layout.WithConstraints
@@ -19,9 +19,7 @@ import model.interpolators.FunctionInterpolator
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
-import kotlin.math.log2
-import kotlin.math.pow
-import kotlin.math.sin
+import kotlin.math.*
 
 object Constants {
     const val POINT_RADIUS = 0.005f
@@ -54,12 +52,20 @@ val methodsButtonsText = listOf(
 )
 
 val functionsButtonsText = mapOf(
-    Pair("y = x", fun(x: Float): Float { return x }),
-    Pair("y = x^2", fun(x: Float): Float { return x.pow(2f) }),
-    Pair("y = x^3", fun(x: Float): Float { return x.pow(3f) }),
+    Pair("y = tan(x)", fun(x: Float): Float { return tan(x) }),
     Pair("y = sin(x)", fun(x: Float): Float { return sin(x) }),
     Pair("y = log2(x)", fun(x: Float): Float { return log2(x) }),
-    Pair("y = x^2 * cos(x)", fun(x: Float): Float {return x.pow(2f) * sin(x)})
+    Pair("y = x^2 * cos(x)", fun(x: Float): Float { return x.pow(2f) * sin(x) }),
+    Pair("x^2 + e^(-0.35 * x)", fun(x: Float): Float { return x.pow(2f) + exp(-0.35f * x) }),
+    Pair("x^4 - 1.5 * atan(x)", fun(x: Float): Float { return x.pow(4f) - 1.5f * atan(x) }),
+    Pair("x * sin(x) + 2 * cos(x)", fun(x: Float): Float { return x * sin(x) + 2f * cos(x) }),
+    Pair(
+        "-5 * x^5 + 4 * x^4 - 12 * x^3 + 11 * x^2 - 2 * x + 1",
+        fun(x: Float): Float {
+            return -5f * x.pow(5f) + 4f * x.pow(4f) - 12 * x.pow(3f) + 11f * x.pow(2f) - 2f * x + 1f
+        }),
+    Pair("log10(x - 2)^2 + log10(10 - x)^2 - x^2",
+        fun(x: Float): Float { return log10(x - 2f).pow(2f) + log10(10f - x).pow(2f) - x.pow(.2f) })
 )
 
 val appImg: BufferedImage = ImageIO.read(File("./img/appIcon.png"))
@@ -71,7 +77,7 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
         var numBlobs by remember { mutableStateOf("") }
         var lBound by remember { mutableStateOf("") }
         var rBound by remember { mutableStateOf("") }
-        var functionInterpolator by remember{ mutableStateOf(FunctionInterpolator()) }
+        var functionInterpolator by remember { mutableStateOf(FunctionInterpolator()) }
         var functionDrawingPermitted by remember { mutableStateOf(false) }
         Row(
             modifier = Modifier
@@ -83,6 +89,7 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
                     .weight(0.2f)
                     .background(color = Color(0xff4b2c20))
                     .fillMaxHeight().border(border = BorderStroke(1.dp, color = Color.White))
+                    .verticalScroll(rememberScrollState())
             ) {
                 when (leftViewType) {
                     LeftViewType.METHOD -> {
@@ -359,8 +366,10 @@ fun Canvas.prepareAxis(
     rBound: Float
 ): Pair<Float, Float> {
     val scaleX = width / (rBound - lBound)
-    val scaleY = width / (maxFnVal - minFnVal)
+    val scaleY = height / (maxFnVal - minFnVal)
     translate(0f, height)
     scale(scaleX, -scaleY)
     return Pair(scaleX, scaleY)
 }
+
+fun Float.closestPowOfTwo(): Float = 2f.pow(round(log2(this)))
