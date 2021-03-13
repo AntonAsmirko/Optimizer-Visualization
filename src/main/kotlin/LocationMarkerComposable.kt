@@ -1,5 +1,6 @@
 @file:Suppress("NAME_SHADOWING")
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
@@ -16,7 +17,7 @@ fun Canvas.drawLocationMarker(
     height: Float
 ) {
     save()
-    scale(1 / scaleX, 1 / scaleY)
+    scale(1 / scaleX, -1 / scaleY)
     translate(0f, -height)
 
     val c = 0.551915024494f
@@ -62,6 +63,7 @@ fun Canvas.drawLocationMarker(
         mData[1]
     )
     translate(originX, originY)
+    scale(1f, 1f)
     path.reset()
     drawPath(
         path.apply {
