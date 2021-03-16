@@ -1,11 +1,13 @@
 @file:Suppress("NAME_SHADOWING")
 
-import androidx.compose.material.rememberBottomDrawerState
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.nativeCanvas
+import org.jetbrains.skija.*
+
+val font = Font(Typeface.makeDefault(), 24f)
 
 fun Canvas.drawLocationMarker(
     path: Path,
@@ -51,7 +53,6 @@ fun Canvas.drawLocationMarker(
         mData[7] + mDifference
     )
     translate(originX, originY)
-    scale(1f, 1f)
     path.reset()
     drawPath(
         path.apply {
@@ -94,5 +95,33 @@ fun Canvas.drawLocationMarker(
         },
         paint
     )
+    val startX = -circleRadius / 2
+    val startY = -circleRadius * 2
+    var curPos = startX
+    val textItems = font
+        .getStringGlyphs(originX.toString())
+        .map {
+            val res = Pair(it, Point(curPos, startY))
+            curPos += font.size * 2 / 3
+            res
+        }
+    nativeCanvas.drawTextBlob(
+        TextBlob.makeFromPos(
+            textItems
+                .map { it.first }
+                .toShortArray(),
+            textItems
+                .map { it.second }
+                .toTypedArray(),
+            font
+        ),
+        originX,
+        originY,
+        font,
+        org.jetbrains.skija.Paint().apply {
+            color = 0xff000000.toInt()
+        }
+    )
+    path.reset()
     restore()
 }
