@@ -90,21 +90,9 @@ fun Canvas.drawLocationMarker(
                 mData[0],
                 mData[1]
             )
-//            arcTo(
-//                Rect(
-//                    mData[6],
-//                    mData[1] - 2f * circleRadius,
-//                    mData[2],
-//                    mData[1],
-//                ),
-//                180f,
-//                -90f,
-//                false
-//            )
             close()
         },
         paint
     )
-    drawCircle(Offset(originX, originY), 5f, paint)
     restore()
 }

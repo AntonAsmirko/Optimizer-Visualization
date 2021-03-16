@@ -25,6 +25,7 @@ object Constants {
     const val NONE_FUNC = "NONE"
     const val BACK_BUTTON = "BACK"
     const val SUBMIT = "ok"
+    const val CURSOR_COORDINATES_CIRCLE_RADIUS = 35f
 }
 
 enum class LeftViewType {
@@ -163,6 +164,7 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
             }
             if (func != Constants.NONE_FUNC && functionDrawingPermitted) {
                 var cursorPosition by remember { mutableStateOf<Offset?>(null) }
+                var clickPermitted by remember { mutableStateOf(false) }
                 WithConstraints(
                     modifier = Modifier
                         .weight(0.8f)
@@ -171,7 +173,12 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
                         .pointerMoveFilter(onMove = {
                             cursorPosition = it
                             true
-                        })
+                        }, onExit = {
+                            cursorPosition = null
+                            true
+                        }).clickable {
+                            clickPermitted = !clickPermitted
+                        }
 
                 ) {
                     val boxWidth = constraints.maxWidth
@@ -190,7 +197,7 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
                         val maxFnVal = points!!.maxByOrNull { it.y }?.y ?: 100f
                         val samplePlotData =
                             PlotData(lBound.toFloat(), rBound.toFloat(), points!!, minFnVal, maxFnVal)
-                        plotView(samplePlotData, boxHeight, boxWidth, cursorPosition)
+                        plotView(samplePlotData, boxHeight, boxWidth, cursorPosition, clickPermitted)
                     } else {
                         textCentred(
                             modifier = Modifier
@@ -279,7 +286,8 @@ fun plotView(
     plotData: PlotData,
     height: Int,
     width: Int,
-    cursorPosition: Offset?
+    cursorPosition: Offset?,
+    cursorDrawingPermitted: Boolean
 ) {
     val paint by remember { mutableStateOf(Paint()) }
     val path by remember { mutableStateOf(Path()) }
@@ -287,47 +295,48 @@ fun plotView(
         .fillMaxWidth()
         .fillMaxHeight(),
         onDraw = {
-        this.drawContext.canvas.apply {
-            save()
-            val (scaleX, scaleY) = prepareAxis(
-                plotData.minFnVal,
-                plotData.maxFnVal,
-                height.toFloat(),
-                width.toFloat(),
-                plotData.lBound,
-                plotData.rBound
-            )
-            drawGrid(
-                paint,
-                height.toFloat(),
-                width.toFloat(),
-                scaleX,
-                scaleY
-            )
-            drawPoints(
-                plotData.points,
-                Constants.POINT_RADIUS,
-                plotData.lBound,
-                plotData.minFnVal,
-                scaleX,
-                scaleY,
-                paint
-            )
-            cursorPosition?.let {
-                drawLocationMarker(
-                    path,
+            this.drawContext.canvas.apply {
+                save()
+                val (scaleX, scaleY) = prepareAxis(
+                    plotData.minFnVal,
+                    plotData.maxFnVal,
+                    height.toFloat(),
+                    width.toFloat(),
+                    plotData.lBound,
+                    plotData.rBound
+                )
+                drawGrid(
                     paint,
-                    it.x / 2,
-                    it.y / 2,
-                    50f,
+                    height.toFloat(),
+                    width.toFloat(),
+                    scaleX,
+                    scaleY
+                )
+                drawPoints(
+                    plotData.points,
+                    Constants.POINT_RADIUS,
+                    plotData.lBound,
+                    plotData.minFnVal,
                     scaleX,
                     scaleY,
-                    height.toFloat()
+                    paint
                 )
+                cursorPosition?.let {
+                    if (cursorDrawingPermitted)
+                        drawLocationMarker(
+                            path,
+                            paint,
+                            it.x / 2,
+                            it.y / 2,
+                            Constants.CURSOR_COORDINATES_CIRCLE_RADIUS,
+                            scaleX,
+                            scaleY,
+                            height.toFloat()
+                        )
+                }
+                restore()
             }
-            restore()
-        }
-    })
+        })
 }
 
 fun Canvas.drawGrid(paint: Paint, height: Float, width: Float, scaleX: Float, scaleY: Float) {
