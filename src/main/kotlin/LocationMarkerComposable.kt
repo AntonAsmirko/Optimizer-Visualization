@@ -1,10 +1,10 @@
 @file:Suppress("NAME_SHADOWING")
 
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.nativeCanvas
 import org.jetbrains.skija.*
 
 val font = Font(Typeface.makeDefault(), 24f)
@@ -17,7 +17,9 @@ fun Canvas.drawLocationMarker(
     circleRadius: Float,
     scaleX: Float,
     scaleY: Float,
-    height: Float
+    height: Float,
+    lBound: Float,
+    minValue: Float
 ) {
     save()
     scale(1 / scaleX, -1 / scaleY)
@@ -95,17 +97,46 @@ fun Canvas.drawLocationMarker(
         },
         paint
     )
+
+    nativeCanvas
+        .drawText(
+            originX,
+            originY,
+            circleRadius,
+            (originX / scaleX + lBound / 2) * 2,
+            0f
+        )
+    nativeCanvas
+        .drawText(
+            originX,
+            originY,
+            circleRadius,
+            (originY / scaleY + minValue / 2) * 2,
+            20f
+        )
+
+    path.reset()
+    restore()
+}
+
+fun NativeCanvas.drawText(
+    originX: Float,
+    originY: Float,
+    circleRadius: Float,
+    translatedVal: Float,
+    yOffset: Float
+) {
     val startX = -circleRadius / 2
     val startY = -circleRadius * 2
     var curPos = startX
     val textItems = font
-        .getStringGlyphs(originX.toString())
+        .getStringGlyphs(translatedVal.toString())
         .map {
             val res = Pair(it, Point(curPos, startY))
             curPos += font.size * 2 / 3
             res
         }
-    nativeCanvas.drawTextBlob(
+    drawTextBlob(
         TextBlob.makeFromPos(
             textItems
                 .map { it.first }
@@ -116,12 +147,10 @@ fun Canvas.drawLocationMarker(
             font
         ),
         originX,
-        originY,
+        originY + yOffset,
         font,
         org.jetbrains.skija.Paint().apply {
             color = 0xff000000.toInt()
         }
     )
-    path.reset()
-    restore()
 }

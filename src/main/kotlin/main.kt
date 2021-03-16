@@ -331,7 +331,9 @@ fun plotView(
                             Constants.CURSOR_COORDINATES_CIRCLE_RADIUS,
                             scaleX,
                             scaleY,
-                            height.toFloat()
+                            height.toFloat(),
+                            plotData.lBound,
+                            plotData.minFnVal
                         )
                 }
                 restore()
