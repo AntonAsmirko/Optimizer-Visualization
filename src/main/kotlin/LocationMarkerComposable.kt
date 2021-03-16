@@ -1,5 +1,6 @@
 @file:Suppress("NAME_SHADOWING")
 
+import androidx.compose.material.rememberBottomDrawerState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
@@ -25,16 +26,16 @@ fun Canvas.drawLocationMarker(
 
     val mData = arrayOf(
         originX,
-        originY + circleRadius,
+        originY,
 
         originX + circleRadius,
-        originY,
+        originY - circleRadius * 2,
 
         originX,
         originY - circleRadius * 3,
 
         originX - circleRadius,
-        originY
+        originY - circleRadius * 2
     )
 
     val mCtrl = arrayOf(
@@ -44,72 +45,66 @@ fun Canvas.drawLocationMarker(
         mData[2],
         mData[3] + mDifference,
 
-        mData[2],
-        mData[3] - mDifference,
-
-        mData[4] + mDifference,
-        mData[5],
-
-        mData[4] - mDifference,
-        mData[5],
-
-        mData[6],
-        mData[7] - mDifference,
-
-        mData[6],
-        mData[7] + mDifference,
-
         mData[0] - mDifference,
-        mData[1]
+        mData[1],
+        mData[6],
+        mData[7] + mDifference
     )
     translate(originX, originY)
     scale(1f, 1f)
     path.reset()
     drawPath(
         path.apply {
+            val arcRect = Rect(
+                mData[6],
+                mData[5],
+                mData[2],
+                mData[3] + circleRadius
+            )
             moveTo(mData[0], mData[1])
-            lineTo((mData[2] - mData[6]) / 2f + mData[6], mData[1])
+            cubicTo(
+                mCtrl[0],
+                mCtrl[1],
+                mCtrl[2],
+                mCtrl[3],
+                mData[2],
+                mData[3]
+            )
             arcTo(
-                Rect(
-                    mData[6],
-                    mData[1] - 2f * circleRadius,
-                    mData[2],
-                    mData[1]
-                ),
-                90f,
+                arcRect,
+                0f,
+                -90f,
+                false
+            )
+            arcTo(
+                arcRect,
+                -90f,
                 -90f,
                 false
             )
             cubicTo(
-                mCtrl[4],
-                mCtrl[5],
                 mCtrl[6],
                 mCtrl[7],
-                mData[4],
-                mData[5]
+                mCtrl[4],
+                mCtrl[5],
+                mData[0],
+                mData[1]
             )
-            cubicTo(
-                mCtrl[8],
-                mCtrl[9],
-                mCtrl[10],
-                mCtrl[11],
-                mData[6],
-                mData[7]
-            )
-            arcTo(
-                Rect(
-                    mData[6],
-                    mData[1] - 2f * circleRadius,
-                    mData[2],
-                    mData[1],
-                ),
-                180f,
-                -90f,
-                false
-            )
+//            arcTo(
+//                Rect(
+//                    mData[6],
+//                    mData[1] - 2f * circleRadius,
+//                    mData[2],
+//                    mData[1],
+//                ),
+//                180f,
+//                -90f,
+//                false
+//            )
             close()
         },
         paint
     )
+    drawCircle(Offset(originX, originY), 5f, paint)
     restore()
 }
