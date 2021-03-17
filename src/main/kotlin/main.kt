@@ -26,6 +26,8 @@ object Constants {
     const val BACK_BUTTON = "BACK"
     const val SUBMIT = "ok"
     const val CURSOR_COORDINATES_CIRCLE_RADIUS = 35f
+    const val NEXT_ITERATION = "next iteration"
+    const val PREV_ITERATION = "prev iteration"
 }
 
 enum class LeftViewType {
@@ -78,8 +80,11 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
         var rBound by remember { mutableStateOf("") }
         val functionInterpolator by remember { mutableStateOf(FunctionInterpolator()) }
         var functionDrawingPermitted by remember { mutableStateOf(false) }
+        var stepSize by remember { mutableStateOf("") }
+        var currentOptimizerStep by remember { mutableStateOf(0) }
         var message: String? = null
         var points: List<Offset>?
+
         Row(
             modifier = Modifier
                 .background(color = Color(0xff795548))
@@ -157,7 +162,34 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
                         )
                         fieldSpacer()
                         buttonInBox(Constants.SUBMIT) {
-                            functionDrawingPermitted = validateInput(lBound, rBound, numBlobs)
+                            functionDrawingPermitted = validateInput(lBound)
+                                    && validateInput(rBound)
+                                    && validateInput(numBlobs)
+                                    && lBound.toFloat() < rBound.toFloat()
+                        }
+                        if (functionDrawingPermitted) {
+                            fieldSpacer()
+                            Text(text = "Step (num iterations)")
+                            fieldSpacer()
+                            OutlinedTextField(
+                                value = "",
+                                inactiveColor = Color(0xff64dd17),
+                                activeColor = Color(0xff1faa00),
+                                onValueChange = {
+                                    stepSize += it
+                                },
+                                label = { Text(text = stepSize) }
+                            )
+                            fieldSpacer()
+                            buttonInBox(Constants.NEXT_ITERATION) {
+                                functionDrawingPermitted = validateInput(stepSize)
+                                currentOptimizerStep += stepSize.toInt()
+                            }
+                            fieldSpacer()
+                            buttonInBox(Constants.PREV_ITERATION) {
+                                functionDrawingPermitted = validateInput(stepSize)
+                                currentOptimizerStep -= stepSize.toInt()
+                            }
                         }
                     }
                 }
@@ -224,7 +256,7 @@ fun fieldSpacer() {
     Spacer(modifier = Modifier.padding(7.dp))
 }
 
-fun validateInput(lBound: String, rBound: String, numOfBlobs: String): Boolean {
+fun validateInput(num: String): Boolean {
     return true
 }
 
