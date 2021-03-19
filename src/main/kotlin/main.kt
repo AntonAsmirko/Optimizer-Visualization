@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.layout.WithConstraints
 import androidx.compose.ui.unit.dp
+import firstLab.*
 import model.PlotData
 import model.interpolators.FunctionInterpolator
 import java.awt.image.BufferedImage
@@ -28,6 +29,13 @@ object Constants {
     const val CURSOR_COORDINATES_CIRCLE_RADIUS = 35f
     const val NEXT_ITERATION = "next iteration"
     const val PREV_ITERATION = "prev iteration"
+    const val BRENT = "Brent"
+    const val DICHOTOMY = "Dichotomy"
+    const val FIBONACCI = "Fibonacci"
+    const val GOLDEN_SECTION = "Golden Section"
+    const val PARABOLAS = "Parabolas"
+    const val TMP_EPS = 0.001
+    const val MESSAGE_TROUBLES_WITH_OPTIMIZER = "Some error occured while initialization of optimizer"
 }
 
 enum class LeftViewType {
@@ -44,13 +52,25 @@ enum class MethodType {
     PARABOLAS
 }
 
-val methodsButtonsText = listOf(
-    Pair("Brent", MethodType.BRENT),
-    Pair("Dichotomy", MethodType.DICHOTOMY),
-    Pair("Fibonacci", MethodType.FIBONACCI),
-    Pair("Golden Section", MethodType.GOLDEN_SECTION),
-    Pair("Parabolas", MethodType.PARABOLAS)
-)
+val methodsButtonsText = Constants.let {
+    listOf(
+        Pair(it.BRENT, MethodType.BRENT),
+        Pair(it.DICHOTOMY, MethodType.DICHOTOMY),
+        Pair(it.FIBONACCI, MethodType.FIBONACCI),
+        Pair(it.GOLDEN_SECTION, MethodType.GOLDEN_SECTION),
+        Pair(it.PARABOLAS, MethodType.PARABOLAS)
+    )
+}
+
+val getOptimizer = Constants.let {
+    mapOf(
+        Pair(it.BRENT, fun(l: Logger): Optimizer { return Brent(l) }),
+        Pair(it.DICHOTOMY, fun(l: Logger): Optimizer { return Dichotomy(l) }),
+        Pair(it.GOLDEN_SECTION, fun(l: Logger): Optimizer { return GoldenSection(l) }),
+        Pair(it.FIBONACCI, fun(l: Logger): Optimizer { return Fibonacci(l) }),
+        Pair(it.PARABOLAS, fun(l: Logger): Optimizer { return Parabolas(l) })
+    )
+}
 
 val functionsButtonsText = mapOf(
     Pair("y = tan(x)", fun(x: Float): Float { return tan(x) }),
@@ -69,9 +89,18 @@ val functionsButtonsText = mapOf(
         fun(x: Float): Float { return log10(x - 2f).pow(2f) + log10(10f - x).pow(2f) - x.pow(.2f) })
 )
 
+val floatFnToDouble: (fn: (Float) -> Float) -> ((Double) -> Double) = { fn ->
+    {
+        fn(it.toFloat()).toDouble()
+    }
+}
+
 val appImg: BufferedImage = ImageIO.read(File("./img/appIcon.png"))
 
-fun main() = Window(title = Constants.TITLE, icon = appImg) {
+fun main() = Window(
+    title = Constants.TITLE,
+    icon = appImg
+) {
     MaterialTheme {
         var leftViewType by remember { mutableStateOf(LeftViewType.METHOD) }
         var func by remember { mutableStateOf(Constants.NONE_FUNC) }
@@ -84,6 +113,7 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
         var currentOptimizerStep by remember { mutableStateOf(0) }
         var message: String? = null
         var points: List<Offset>?
+        var optimizer by remember { mutableStateOf<Optimizer?>(null) }
 
         Row(
             modifier = Modifier
@@ -102,9 +132,10 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
             ) {
                 when (leftViewType) {
                     LeftViewType.METHOD -> {
-                        methodsButtonsText.forEach {
-                            buttonInBox(it.first) {
+                        methodsButtonsText.forEach { p ->
+                            buttonInBox(p.first) {
                                 leftViewType = it
+                                optimizer = getOptimizer[p.first]?.invoke(Logger())
                             }
                         }
                     }
@@ -229,7 +260,28 @@ fun main() = Window(title = Constants.TITLE, icon = appImg) {
                         val maxFnVal = points!!.maxByOrNull { it.y }?.y ?: 100f
                         val samplePlotData =
                             PlotData(lBound.toFloat(), rBound.toFloat(), points!!, minFnVal, maxFnVal)
-                        plotView(samplePlotData, boxHeight, boxWidth, cursorPosition, clickPermitted)
+                        optimizer?.run {
+                            val optimizerResult = optimize(
+                                samplePlotData.lBound.toDouble(),
+                                samplePlotData.rBound.toDouble(),
+                                Constants.TMP_EPS,
+                                floatFnToDouble(functionsButtonsText[func]!!)
+                            )
+                            plotView(
+                                samplePlotData,
+                                boxHeight,
+                                boxWidth,
+                                cursorPosition,
+                                clickPermitted,
+                                optimizerResult.toFloat(),
+                                array
+                            )
+                        } ?: textCentred(
+                            modifier = Modifier
+                                .align(alignment = Alignment.CenterVertically)
+                                .weight(0.8f),
+                            Constants.MESSAGE_TROUBLES_WITH_OPTIMIZER
+                        )
                     } else {
                         textCentred(
                             modifier = Modifier
@@ -319,7 +371,9 @@ fun plotView(
     height: Int,
     width: Int,
     cursorPosition: Offset?,
-    cursorDrawingPermitted: Boolean
+    cursorDrawingPermitted: Boolean,
+    optimizerResult: Float,
+    allOptimizersSteps: ArrayList<ArrayList<Double>>
 ) {
     val paint by remember { mutableStateOf(Paint()) }
     val path by remember { mutableStateOf(Path()) }
@@ -373,7 +427,13 @@ fun plotView(
         })
 }
 
-fun Canvas.drawGrid(paint: Paint, height: Float, width: Float, scaleX: Float, scaleY: Float) {
+fun Canvas.drawGrid(
+    paint: Paint,
+    height: Float,
+    width: Float,
+    scaleX: Float,
+    scaleY: Float
+) {
     save()
     scale(1 / scaleX, -1 / scaleY)
     val stepX = 30f
@@ -447,5 +507,3 @@ fun Canvas.prepareAxis(
     scale(scaleX, -scaleY)
     return Pair(scaleX, scaleY)
 }
-
-fun Float.closestPowOfTwo(): Float = 2f.pow(round(log2(this)))

@@ -1,0 +1,20 @@
+firstLab/GoldenSection.java
+ firstLab.GoldenSection
+firstLab/Parabolas.java
+ firstLab.Parabolas
+Runner.java
+ Runner
+Main.java
+ Main
+firstLab/Brent.java
+ firstLab.Brent
+firstLab/Optimizer.java
+ firstLab.Optimizer
+firstLab/Fibonacci.java
+ firstLab.Fibonacci
+Task.java
+ Task
+firstLab/Logger.java
+ firstLab.Logger
+firstLab/Dichotomy.java
+ firstLab.Dichotomy

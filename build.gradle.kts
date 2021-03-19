@@ -19,6 +19,9 @@ repositories {
 dependencies {
     implementation(compose.desktop.currentOs)
     implementation(kotlin("stdlib-jdk8"))
+    implementation("org.javatuples:javatuples:1.2")
+    implementation ("org.apache.poi:poi:4.0.0")
+    implementation ("org.apache.poi:poi-ooxml:4.0.0")
 }
 
 tasks.withType<KotlinCompile>() {
