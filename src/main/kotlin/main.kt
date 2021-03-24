@@ -84,7 +84,9 @@ fun main() = Window(
                                 MaterialTheme.colors
                             ) {
                                 leftViewType = it
-                                optimizer = getOptimizer[p.first]?.invoke(Logger())
+                                optimizer = getOptimizer[p.first]?.invoke(Logger().apply {
+                                    rowN = 2;
+                                })
                             }
                         }
                     }

@@ -20,9 +20,7 @@ public abstract class Optimizer {
         toLog = log != null;
     }
 
-    public double optimize(double l, double r, double eps, Function<Double, Double> func) {
-        return 0;
-    }
+    public abstract double optimize(double l, double r, double eps, Function<Double, Double> func);
 
     public void forLog(Object... o) {
         if(toLog)
