@@ -1,7 +1,7 @@
+import Constants.BORDER_WIDTH
 import androidx.compose.desktop.Window
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -11,29 +11,38 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.layout.WithConstraints
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import composables.buttonInBox
 import composables.fieldSpacer
 import composables.plotView
 import composables.textCentred
-import extensions.drawGrid
-import extensions.drawPoints
-import extensions.prepareAxis
 import firstLab.*
 import model.PlotData
 import model.interpolators.FunctionInterpolator
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
-import kotlin.math.*
 
 val appImg: BufferedImage = ImageIO.read(File("./img/appIcon.png"))
 
+val darkColors = darkColors(
+    primary = Color(0xff37474f),
+    primaryVariant = Color(0xff62727b),
+    secondary = Color(0xffb2ff59),
+    background = Color(0xff102027),
+    surface = Color(0xff62727b),
+    onPrimary = Color.White,
+    onSecondary = Color.Black
+)
+
 fun main() = Window(
     title = Constants.TITLE,
-    icon = appImg
+    icon = appImg,
 ) {
-    MaterialTheme {
+    MaterialTheme(
+        colors = darkColors
+    ) {
         var leftViewType by remember { mutableStateOf(LeftViewType.METHOD) }
         var func by remember { mutableStateOf(Constants.NONE_FUNC) }
         var numBlobs by remember { mutableStateOf("") }
@@ -49,42 +58,59 @@ fun main() = Window(
 
         Row(
             modifier = Modifier
-                .background(color = Color(0xff795548))
+                .background(color = MaterialTheme.colors.background)
                 .fillMaxHeight()
                 .fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier
-                    .background(color = Color(0xff4b2c20))
+                    .background(color = MaterialTheme.colors.background)
                     .fillMaxHeight()
                     .fillMaxWidth()
                     .weight(0.2f)
-                    .border(border = BorderStroke(1.dp, color = Color.White))
+                    .border(
+                        border = BorderStroke(
+                            BORDER_WIDTH,
+                            color = MaterialTheme.colors.primary
+                        )
+                    )
                     .verticalScroll(rememberScrollState())
             ) {
                 when (leftViewType) {
                     LeftViewType.METHOD -> {
                         methodsButtonsText.forEach { p ->
-                            buttonInBox(p.first) {
+                            buttonInBox(
+                                p.first,
+                                MaterialTheme.colors
+                            ) {
                                 leftViewType = it
                                 optimizer = getOptimizer[p.first]?.invoke(Logger())
                             }
                         }
                     }
                     LeftViewType.FUNCTION -> {
-                        buttonInBox(Constants.BACK_BUTTON) {
+                        buttonInBox(
+                            Constants.BACK_BUTTON,
+                            MaterialTheme.colors
+                        ) {
                             leftViewType = LeftViewType.METHOD
                             func = Constants.NONE_FUNC
                         }
                         functionsButtonsText.forEach { pair ->
-                            buttonInBox(pair.key) {
+                            buttonInBox(
+                                pair.key,
+                                MaterialTheme.colors
+                            ) {
                                 func = pair.key
                                 leftViewType = LeftViewType.FUNCTION_INPUT
                             }
                         }
                     }
                     LeftViewType.FUNCTION_INPUT -> {
-                        buttonInBox(Constants.BACK_BUTTON) {
+                        buttonInBox(
+                            Constants.BACK_BUTTON,
+                            MaterialTheme.colors
+                        ) {
                             leftViewType = LeftViewType.FUNCTION
                             func = Constants.NONE_FUNC
                             functionDrawingPermitted = false
@@ -93,38 +119,49 @@ fun main() = Window(
                             rBound = ""
                         }
                         fieldSpacer()
-                        Text(text = func)
+                        Text(
+                            modifier = Modifier.padding(15.dp, 0.dp, 0.dp, 0.dp),
+                            text = func,
+                            style = TextStyle(color = MaterialTheme.colors.onSurface)
+                            )
                         fieldSpacer()
                         OutlinedTextField(
-                            value = "",
-                            inactiveColor = Color(0xff64dd17),
-                            activeColor = Color(0xff1faa00),
+                            value = lBound,
+                            inactiveColor = MaterialTheme.colors.secondary,
+                            activeColor = MaterialTheme.colors.surface,
                             onValueChange = {
-                                lBound += it
+                                lBound = it
                             },
-
-                            label = { Text(lBound) })
-                        fieldSpacer()
-                        OutlinedTextField(
-                            value = "",
-                            inactiveColor = Color(0xff64dd17),
-                            activeColor = Color(0xff1faa00),
-                            onValueChange = {
-                                rBound += it
-                            },
-                            label = { Text(rBound) })
-                        fieldSpacer()
-                        OutlinedTextField(
-                            value = "",
-                            inactiveColor = Color(0xff64dd17),
-                            activeColor = Color(0xff1faa00),
-                            onValueChange = {
-                                numBlobs += it
-                            },
-                            label = { Text(numBlobs) }
+                            label = { Text("enter left bound of the function") },
+                            textStyle = TextStyle(color = MaterialTheme.colors.onSurface)
                         )
                         fieldSpacer()
-                        buttonInBox(Constants.SUBMIT) {
+                        OutlinedTextField(
+                            value = rBound,
+                            inactiveColor = MaterialTheme.colors.secondary,
+                            activeColor = MaterialTheme.colors.surface,
+                            onValueChange = {
+                                rBound = it
+                            },
+                            label = { Text("enter right bound of function") },
+                            textStyle = TextStyle(color = MaterialTheme.colors.onSurface)
+                        )
+                        fieldSpacer()
+                        OutlinedTextField(
+                            value = numBlobs,
+                            inactiveColor = MaterialTheme.colors.secondary,
+                            activeColor = MaterialTheme.colors.surface,
+                            onValueChange = {
+                                numBlobs = it
+                            },
+                            label = { Text("enter number of blobs to be taken") },
+                            textStyle = TextStyle(color = MaterialTheme.colors.onSurface)
+                        )
+                        fieldSpacer()
+                        buttonInBox(
+                            Constants.SUBMIT,
+                            MaterialTheme.colors
+                        ) {
                             functionDrawingPermitted = validateInput(lBound)
                                     && validateInput(rBound)
                                     && validateInput(numBlobs)
@@ -135,21 +172,28 @@ fun main() = Window(
                             Text(text = "Step (num iterations)")
                             fieldSpacer()
                             OutlinedTextField(
-                                value = "",
-                                inactiveColor = Color(0xff64dd17),
-                                activeColor = Color(0xff1faa00),
+                                value = stepSize,
+                                inactiveColor = MaterialTheme.colors.secondary,
+                                activeColor = MaterialTheme.colors.surface,
                                 onValueChange = {
-                                    stepSize += it
+                                    stepSize = it
                                 },
-                                label = { Text(text = stepSize) }
+                                label = { Text("enter step size") },
+                                textStyle = TextStyle(color = MaterialTheme.colors.onSurface)
                             )
                             fieldSpacer()
-                            buttonInBox(Constants.NEXT_ITERATION) {
+                            buttonInBox(
+                                Constants.NEXT_ITERATION,
+                                MaterialTheme.colors
+                            ) {
                                 functionDrawingPermitted = validateInput(stepSize)
                                 currentOptimizerStep += stepSize.toInt()
                             }
                             fieldSpacer()
-                            buttonInBox(Constants.PREV_ITERATION) {
+                            buttonInBox(
+                                Constants.PREV_ITERATION,
+                                MaterialTheme.colors
+                            ) {
                                 functionDrawingPermitted = validateInput(stepSize)
                                 currentOptimizerStep -= stepSize.toInt()
                             }
@@ -205,6 +249,7 @@ fun main() = Window(
                                 boxWidth,
                                 cursorPosition,
                                 clickPermitted,
+                                MaterialTheme.colors,
                                 optimizerResult.toFloat(),
                                 array,
                                 currentOptimizerStep

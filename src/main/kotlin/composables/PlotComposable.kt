@@ -3,6 +3,7 @@ package composables
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.Colors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,6 +16,7 @@ import drawLocationMarker
 import extensions.drawGrid
 import extensions.drawPoints
 import extensions.prepareAxis
+import firstLab.Optimizer
 import model.PlotData
 
 @Composable
@@ -24,11 +26,17 @@ fun plotView(
     width: Int,
     cursorPosition: Offset?,
     cursorDrawingPermitted: Boolean,
+    themeColors: Colors,
     optimizerResult: Float,
-    allOptimizersSteps: ArrayList<ArrayList<Double>>,
+    allOptimizersSteps: ArrayList<ArrayList<Optimizer.Pair<Double>>>,
     currentStep: Int
 ) {
-    val paint by remember { mutableStateOf(Paint()) }
+    val paint by remember {
+        mutableStateOf(Paint()
+            .apply {
+                color = themeColors.surface
+            })
+    }
     val path by remember { mutableStateOf(Path()) }
     Canvas(modifier = Modifier
         .fillMaxWidth()

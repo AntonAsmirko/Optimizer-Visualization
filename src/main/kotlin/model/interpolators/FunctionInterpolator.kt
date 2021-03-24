@@ -1,7 +1,6 @@
 package model.interpolators
 
 import androidx.compose.ui.geometry.Offset
-import java.lang.IllegalStateException
 
 class FunctionInterpolator {
 

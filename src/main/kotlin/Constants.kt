@@ -1,3 +1,5 @@
+import androidx.compose.ui.unit.dp
+
 object Constants {
     const val POINT_RADIUS = 0.005f
     const val TITLE = "Optimizer Visualizer"
@@ -15,4 +17,5 @@ object Constants {
     const val TMP_EPS = 0.001
     const val MESSAGE_TROUBLES_WITH_OPTIMIZER = "Some error occured while initialization of optimizer"
     const val HINT_CHOOSE_FUNCTION = "Something will be drawn here after you chose method and function"
+    val BORDER_WIDTH = 1.dp
 }

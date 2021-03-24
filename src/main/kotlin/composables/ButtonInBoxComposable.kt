@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonConstants
+import androidx.compose.material.Colors
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun buttonInBox(
     text: String,
+    colors: Colors,
     onChange: (type: LeftViewType) -> Unit
 ) {
     val active = remember { mutableStateOf(false) }
@@ -34,7 +36,7 @@ fun buttonInBox(
         OutlinedButton(
             onClick = { onChange(LeftViewType.FUNCTION) },
             shape = RoundedCornerShape(50),
-            border = BorderStroke(2.dp, Color(0xff64dd17)),
+            border = BorderStroke(2.dp, colors.secondaryVariant),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
@@ -48,9 +50,7 @@ fun buttonInBox(
                         false
                     }),
             colors = ButtonConstants.defaultButtonColors(
-                backgroundColor = if (!active.value) Color(0xffa98274) else Color(
-                    0xff76ff03
-                )
+                backgroundColor = if (!active.value) colors.secondary else colors.primaryVariant
             )
         ) {
             Text(text)

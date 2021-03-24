@@ -13,7 +13,7 @@ fun Canvas.drawCurrentStep(
 ) {
     save()
 
-
+    restore()
 }
 
 fun Canvas.drawGrid(
@@ -28,7 +28,6 @@ fun Canvas.drawGrid(
     val stepX = 30f
     val stepY = 30f
     paint.apply {
-        color = Color(0xff1faa00)
         strokeWidth = 1f
     }
     var curHeight = 0f
@@ -68,7 +67,6 @@ fun Canvas.drawPoints(
     }).toTypedArray()
     var prevOffset: Offset? = null
     paint.apply {
-        color = Color(0xff64dd17)
         strokeWidth = strokeWidthConst
     }
     for (i in sorted.indices) {

@@ -59,6 +59,7 @@ public class Parabolas extends Optimizer {
                 fx = fu;
             }
             forLog(k, u, x, l, r, Math.abs(l-r), prev/Math.abs(l-r));
+            toMass(l, fl, x, fx, u, fu, r, fr);
             prev = Math.abs(l-r);
             k++;
         }

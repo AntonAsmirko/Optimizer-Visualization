@@ -10,6 +10,7 @@ firstLab/Brent.java
  firstLab.Brent
 firstLab/Optimizer.java
  firstLab.Optimizer
+ firstLab.Optimizer$Pair
 firstLab/Fibonacci.java
  firstLab.Fibonacci
 Task.java

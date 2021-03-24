@@ -50,6 +50,8 @@ public class Fibonacci extends Optimizer {
                 fX2 = func.apply(x2);
             }
             forLog( n, x1, x2, fX1, fX2, a, b, Math.abs(a-b), prev/(Math.abs(a-b)));
+            toMass(x1, fX1, x2, fX2);
+
             prev = Math.abs(a-b);
         }
         return (x1 + x2) / 2;
