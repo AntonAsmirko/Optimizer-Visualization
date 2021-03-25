@@ -55,6 +55,7 @@ fun main() = Window(
         var message: String? = null
         var points: List<Offset>?
         var optimizer by remember { mutableStateOf<Optimizer?>(null) }
+        var funcChanged by remember { mutableStateOf(false) }
 
         Row(
             modifier = Modifier
@@ -103,6 +104,7 @@ fun main() = Window(
                                 MaterialTheme.colors
                             ) {
                                 func = pair.key
+                                funcChanged = true
                                 leftViewType = LeftViewType.FUNCTION_INPUT
                             }
                         }
@@ -242,12 +244,15 @@ fun main() = Window(
                         val samplePlotData =
                             PlotData(lBound.toFloat(), rBound.toFloat(), points!!, minFnVal, maxFnVal)
                         optimizer?.run {
-                            val optimizerResult = optimize(
-                                samplePlotData.lBound.toDouble(),
-                                samplePlotData.rBound.toDouble(),
-                                Constants.TMP_EPS,
-                                floatFnToDouble(functionsButtonsText[func]!!)
-                            )
+                            if (funcChanged) {
+                                optimize(
+                                    samplePlotData.lBound.toDouble(),
+                                    samplePlotData.rBound.toDouble(),
+                                    Constants.TMP_EPS,
+                                    floatFnToDouble(functionsButtonsText[func]!!)
+                                )
+                                funcChanged = false
+                            }
                             plotView(
                                 samplePlotData,
                                 boxHeight,
