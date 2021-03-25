@@ -26,7 +26,7 @@ fun plotView(
     cursorPosition: Offset?,
     cursorDrawingPermitted: Boolean,
     themeColors: Colors,
-    allOptimizersSteps: ArrayList<ArrayList<Optimizer.Pair<Double>>>,
+    allOptimizersSteps: List<List<Optimizer.Pair<Float>>>,
     currentStep: Int
 ) {
     val paint by remember { mutableStateOf(Paint()) }

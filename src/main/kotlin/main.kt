@@ -188,10 +188,9 @@ fun main() = Window(
                                 MaterialTheme.colors
                             ) {
                                 functionDrawingPermitted = validateInput(stepSize)
-                                if(functionDrawingPermitted) {
+                                if (functionDrawingPermitted) {
                                     currentOptimizerStep += stepSize.toInt()
                                 }
-                                println(currentOptimizerStep)
                             }
                             fieldSpacer()
                             buttonInBox(
@@ -199,10 +198,9 @@ fun main() = Window(
                                 MaterialTheme.colors
                             ) {
                                 functionDrawingPermitted = validateInput(stepSize)
-                                if(functionDrawingPermitted) {
+                                if (functionDrawingPermitted) {
                                     currentOptimizerStep -= stepSize.toInt()
                                 }
-                                println(currentOptimizerStep)
                             }
                         }
                     }
@@ -257,7 +255,16 @@ fun main() = Window(
                                 cursorPosition,
                                 clickPermitted,
                                 MaterialTheme.colors,
-                                array,
+                                array
+                                    .map {
+                                        it.map { p ->
+                                            val xFlt = p.first.toFloat()
+                                            Optimizer.Pair<Float>(
+                                                p.first.toFloat(),
+                                                functionsButtonsText[func]!!.invoke(xFlt)
+                                            )
+                                        }
+                                    },
                                 currentOptimizerStep
                             )
                         } ?: textCentred(

@@ -57,7 +57,7 @@ public abstract class Optimizer {
 
     public static class Pair <T> {
         public T first, second;
-        Pair(T a, T b) {
+        public Pair(T a, T b) {
             this.first = a;
             this.second = b;
         }

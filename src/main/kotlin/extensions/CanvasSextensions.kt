@@ -85,7 +85,7 @@ fun Canvas.prepareAxis(
 }
 
 fun Canvas.drawStep(
-    allOptimizersSteps: ArrayList<ArrayList<Optimizer.Pair<Double>>>,
+    allOptimizersSteps: List<List<Optimizer.Pair<Float>>>,
     currentStep: Int,
     scaleX: Float,
     scaleY: Float,
@@ -101,11 +101,15 @@ fun Canvas.drawStep(
         else -> allOptimizersSteps[currentStep]
     }
 
+    println("$currentStep ${allOptimizersSteps.size}")
+
     currentPoint.forEach {
 
+        println("${it.first} ${it.second}")
+
         val pointToDraw = Offset(
-            (it.first.toFloat() - lBound) * scaleX,
-            (it.second.toFloat() - minFnVal) * scaleY
+            (it.first - lBound) * scaleX,
+            (it.second - minFnVal) * scaleY
         )
 
         drawCircle(pointToDraw, 10f, paint)
