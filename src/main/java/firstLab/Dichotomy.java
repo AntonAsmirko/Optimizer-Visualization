@@ -14,6 +14,8 @@ public class Dichotomy extends Optimizer {
 
     @Override
     public double optimize(double l, double r, double eps, Function<Double, Double> func) {
+        forLog("iter N", "x1", "x2", "f1", "f2", "l", "r", "abs(r-l)", "prev/now");
+        forLog(0, "null", "null", "null", "null", l, r, Math.abs(r-l), 0);
         int k = 1;
         double prev = 0;
         while ((r - l) / 2 > eps) {
@@ -26,6 +28,7 @@ public class Dichotomy extends Optimizer {
             } else {
                 l = x1;
             }
+            forLog(k,x1, x2, f1, f2, l, r, Math.abs(r-l), prev/(Math.abs(r-l)));
             toMass(x1, f1, x2, f2);
             prev = Math.abs(r-l);
             k++;

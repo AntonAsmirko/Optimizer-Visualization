@@ -17,23 +17,9 @@ public class Logger {
     private int maxCell = 0;
     private boolean changed = false;
 
-    public Logger(int rowN) {
-        this.rowN = rowN;
-        row = sheet.createRow(rowN);
-    }
-
     public Logger() {
 
     }
-
-    public int getRowN() {
-        return rowN;
-    }
-
-    public void setRowN(int rowN) {
-        this.rowN = rowN;
-    }
-
     public Logger(String out) {
         outPutFile = out;
     }

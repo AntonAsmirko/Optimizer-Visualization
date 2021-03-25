@@ -84,9 +84,8 @@ fun main() = Window(
                                 MaterialTheme.colors
                             ) {
                                 leftViewType = it
-                                optimizer = getOptimizer[p.first]?.invoke(Logger().apply {
-                                    rowN = 2;
-                                })
+                                //TODO delete useless logger
+                                optimizer = getOptimizer[p.first]?.invoke(Logger())
                             }
                         }
                     }
@@ -125,7 +124,7 @@ fun main() = Window(
                             modifier = Modifier.padding(15.dp, 0.dp, 0.dp, 0.dp),
                             text = func,
                             style = TextStyle(color = MaterialTheme.colors.onSurface)
-                            )
+                        )
                         fieldSpacer()
                         OutlinedTextField(
                             value = lBound,
@@ -189,7 +188,10 @@ fun main() = Window(
                                 MaterialTheme.colors
                             ) {
                                 functionDrawingPermitted = validateInput(stepSize)
-                                currentOptimizerStep += stepSize.toInt()
+                                if(functionDrawingPermitted) {
+                                    currentOptimizerStep += stepSize.toInt()
+                                }
+                                println(currentOptimizerStep)
                             }
                             fieldSpacer()
                             buttonInBox(
@@ -197,7 +199,10 @@ fun main() = Window(
                                 MaterialTheme.colors
                             ) {
                                 functionDrawingPermitted = validateInput(stepSize)
-                                currentOptimizerStep -= stepSize.toInt()
+                                if(functionDrawingPermitted) {
+                                    currentOptimizerStep -= stepSize.toInt()
+                                }
+                                println(currentOptimizerStep)
                             }
                         }
                     }
@@ -252,7 +257,6 @@ fun main() = Window(
                                 cursorPosition,
                                 clickPermitted,
                                 MaterialTheme.colors,
-                                optimizerResult.toFloat(),
                                 array,
                                 currentOptimizerStep
                             )

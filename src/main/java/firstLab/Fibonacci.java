@@ -32,6 +32,8 @@ public class Fibonacci extends Optimizer {
         double fX1 = func.apply(x1);
         double fX2 = func.apply(x2);
 
+        forLog("iter N(to " + iterationsNum + ")", "x1", "x2", "fX1", "fX2", "a", "b",
+                "length", "prev/now");
         double prev = 0;
         for (int n = 1; n <= iterationsNum; n++) {
             if (fX1 - fX2 <= 0) {
@@ -47,6 +49,7 @@ public class Fibonacci extends Optimizer {
                 x2 = b - (x1 - a);
                 fX2 = func.apply(x2);
             }
+            forLog( n, x1, x2, fX1, fX2, a, b, Math.abs(a-b), prev/(Math.abs(a-b)));
             toMass(x1, fX1, x2, fX2);
 
             prev = Math.abs(a-b);

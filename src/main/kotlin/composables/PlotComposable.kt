@@ -10,12 +10,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import drawLocationMarker
-import extensions.drawGrid
-import extensions.drawPoints
-import extensions.prepareAxis
+import extensions.*
 import firstLab.Optimizer
 import model.PlotData
 
@@ -27,23 +26,21 @@ fun plotView(
     cursorPosition: Offset?,
     cursorDrawingPermitted: Boolean,
     themeColors: Colors,
-    optimizerResult: Float,
     allOptimizersSteps: ArrayList<ArrayList<Optimizer.Pair<Double>>>,
     currentStep: Int
 ) {
-    val paint by remember {
-        mutableStateOf(Paint()
-            .apply {
-                color = themeColors.surface
-            })
-    }
+    val paint by remember { mutableStateOf(Paint()) }
     val path by remember { mutableStateOf(Path()) }
     Canvas(modifier = Modifier
         .fillMaxWidth()
         .fillMaxHeight(),
         onDraw = {
+
+            paint.color = themeColors.surface
+
             this.drawContext.canvas.apply {
                 save()
+
                 val (scaleX, scaleY) = prepareAxis(
                     plotData.minFnVal,
                     plotData.maxFnVal,
@@ -52,6 +49,7 @@ fun plotView(
                     plotData.lBound,
                     plotData.rBound
                 )
+
                 drawGrid(
                     paint,
                     height.toFloat(),
@@ -59,6 +57,7 @@ fun plotView(
                     scaleX,
                     scaleY
                 )
+
                 drawPoints(
                     plotData.points,
                     Constants.POINT_RADIUS,
@@ -68,6 +67,21 @@ fun plotView(
                     scaleY,
                     paint
                 )
+
+                drawStep(
+                    allOptimizersSteps,
+                    currentStep,
+                    scaleX,
+                    scaleY,
+                    plotData.lBound,
+                    plotData.minFnVal,
+                    paint.apply {
+                        color = Color(0xff7f0000)
+                    }
+                )
+
+                paint.color = themeColors.secondaryVariant
+
                 cursorPosition?.run {
                     if (cursorDrawingPermitted)
                         drawLocationMarker(

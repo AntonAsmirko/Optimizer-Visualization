@@ -2,19 +2,8 @@ package extensions
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
-
-fun Canvas.drawCurrentStep(
-    steps: ArrayList<ArrayList<Double>>,
-    currentStep: Int,
-    scaleX: Float,
-    scaleY: Float
-) {
-    save()
-
-    restore()
-}
+import firstLab.Optimizer
 
 fun Canvas.drawGrid(
     paint: Paint,
@@ -93,4 +82,34 @@ fun Canvas.prepareAxis(
     translate(0f, height)
     scale(scaleX, -scaleY)
     return Pair(scaleX, scaleY)
+}
+
+fun Canvas.drawStep(
+    allOptimizersSteps: ArrayList<ArrayList<Optimizer.Pair<Double>>>,
+    currentStep: Int,
+    scaleX: Float,
+    scaleY: Float,
+    lBound: Float,
+    minFnVal: Float,
+    paint: Paint
+) {
+    save()
+    scale(1 / scaleX, 1 / scaleY)
+    val currentPoint = when {
+        currentStep < 0 -> allOptimizersSteps[0]
+        currentStep >= allOptimizersSteps.size -> allOptimizersSteps.last()
+        else -> allOptimizersSteps[currentStep]
+    }
+
+    currentPoint.forEach {
+
+        val pointToDraw = Offset(
+            (it.first.toFloat() - lBound) * scaleX,
+            (it.second.toFloat() - minFnVal) * scaleY
+        )
+
+        drawCircle(pointToDraw, 10f, paint)
+    }
+
+    restore()
 }
