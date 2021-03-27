@@ -16,11 +16,12 @@ import androidx.compose.ui.unit.dp
 import composables.buttonInBox
 import composables.fieldSpacer
 import composables.plotView
-import firstLab.*
 import model.PlotData
 import model.interpolators.FunctionInterpolator
 import java.awt.image.BufferedImage
 import java.io.File
+import firstLab.Logger
+import firstLab.Optimizer
 import javax.imageio.ImageIO
 
 val appImg: BufferedImage = ImageIO.read(File("./img/appIcon.png"))
@@ -85,7 +86,7 @@ fun main() = Window(
                             ) {
                                 leftViewType = it
                                 //TODO delete useless logger
-                                optimizer = getOptimizer[p.first]?.invoke(Logger())
+                                optimizer = getOptimizer[p.first]?.invoke()
                             }
                         }
                     }

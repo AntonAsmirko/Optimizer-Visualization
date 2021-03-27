@@ -12,11 +12,11 @@ val methodsButtonsText = Constants.let {
 
 val getOptimizer = Constants.let {
     mapOf(
-        Pair(it.BRENT, fun(l: Logger): Optimizer { return Brent(l) }),
-        Pair(it.DICHOTOMY, fun(l: Logger): Optimizer { return Dichotomy(l) }),
-        Pair(it.GOLDEN_SECTION, fun(l: Logger): Optimizer { return GoldenSection(l) }),
-        Pair(it.FIBONACCI, fun(l: Logger): Optimizer { return Fibonacci(l) }),
-        Pair(it.PARABOLAS, fun(l: Logger): Optimizer { return Parabolas(l) })
+        Pair(it.BRENT, fun(): Optimizer { return Brent() }),
+        Pair(it.DICHOTOMY, fun(): Optimizer { return Dichotomy() }),
+        Pair(it.GOLDEN_SECTION, fun(): Optimizer { return GoldenSection() }),
+        Pair(it.FIBONACCI, fun(): Optimizer { return Fibonacci() }),
+        Pair(it.PARABOLAS, fun(): Optimizer { return Parabolas() })
     )
 }
 

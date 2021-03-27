@@ -1,3 +1,5 @@
+include("Optimization-Methods")
+
 pluginManagement {
     repositories {
         gradlePluginPortal()

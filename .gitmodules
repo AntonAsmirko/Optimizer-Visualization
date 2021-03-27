@@ -1,0 +1,3 @@
+[submodule "Optimization-Methods"]
+	path = Optimization-Methods
+	url = https://github.com/AntonAsmirko/Optimization-Methods.git
