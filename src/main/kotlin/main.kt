@@ -1,6 +1,7 @@
 import Constants.BORDER_WIDTH
 import androidx.compose.desktop.Window
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.Text
@@ -13,6 +14,7 @@ import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.layout.WithConstraints
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import composables.buttonInBox
 import composables.fieldSpacer
 import composables.plotView
@@ -85,7 +87,6 @@ fun main() = Window(
                                 MaterialTheme.colors
                             ) {
                                 leftViewType = it
-                                //TODO delete useless logger
                                 optimizer = getOptimizer[p.first]?.invoke()
                             }
                         }
@@ -126,41 +127,62 @@ fun main() = Window(
                         }
                         fieldSpacer()
                         Text(
-                            modifier = Modifier.padding(15.dp, 0.dp, 0.dp, 0.dp),
+                            modifier = Modifier
+                                .padding(15.dp, 0.dp, 0.dp, 0.dp)
+                                .horizontalScroll(rememberScrollState()),
                             text = func,
-                            style = TextStyle(color = MaterialTheme.colors.onSurface)
+                            style = TextStyle(color = MaterialTheme.colors.onSurface),
+                            maxLines = 1
                         )
                         fieldSpacer()
                         OutlinedTextField(
+                            modifier = Modifier.padding(10.dp),
                             value = lBound,
                             inactiveColor = MaterialTheme.colors.secondary,
                             activeColor = MaterialTheme.colors.surface,
                             onValueChange = {
                                 lBound = it
                             },
-                            label = { Text("enter left bound of the function") },
+                            label = {
+                                Text(
+                                    "left bound",
+                                    fontSize = 10.sp
+                                )
+                            },
                             textStyle = TextStyle(color = MaterialTheme.colors.onSurface)
                         )
                         fieldSpacer()
                         OutlinedTextField(
+                            modifier = Modifier.padding(10.dp),
                             value = rBound,
                             inactiveColor = MaterialTheme.colors.secondary,
                             activeColor = MaterialTheme.colors.surface,
                             onValueChange = {
                                 rBound = it
                             },
-                            label = { Text("enter right bound of function") },
+                            label = {
+                                Text(
+                                    "right bound",
+                                    fontSize = 10.sp
+                                )
+                            },
                             textStyle = TextStyle(color = MaterialTheme.colors.onSurface)
                         )
                         fieldSpacer()
                         OutlinedTextField(
+                            modifier = Modifier.padding(10.dp),
                             value = numBlobs,
                             inactiveColor = MaterialTheme.colors.secondary,
                             activeColor = MaterialTheme.colors.surface,
                             onValueChange = {
                                 numBlobs = it
                             },
-                            label = { Text("enter number of blobs to be taken") },
+                            label = {
+                                Text(
+                                    "number of blobs",
+                                    fontSize = 10.sp
+                                )
+                            },
                             textStyle = TextStyle(color = MaterialTheme.colors.onSurface)
                         )
                         fieldSpacer()
@@ -178,19 +200,27 @@ fun main() = Window(
                             Text(
                                 modifier = Modifier
                                     .padding(30.dp)
-                                    .align(Alignment.CenterHorizontally),
+                                    .align(Alignment.CenterHorizontally)
+                                    .horizontalScroll(rememberScrollState()),
                                 text = "Step (num iterations)",
-                                color = MaterialTheme.colors.onPrimary
+                                color = MaterialTheme.colors.onPrimary,
+                                maxLines = 1
                             )
                             fieldSpacer()
                             OutlinedTextField(
+                                modifier = Modifier.padding(10.dp),
                                 value = stepSize,
                                 inactiveColor = MaterialTheme.colors.secondary,
                                 activeColor = MaterialTheme.colors.surface,
                                 onValueChange = {
                                     stepSize = it
                                 },
-                                label = { Text("enter step size") },
+                                label = {
+                                    Text(
+                                        "enter step size",
+                                        fontSize = 10.sp
+                                    )
+                                },
                                 textStyle = TextStyle(color = MaterialTheme.colors.onSurface)
                             )
                             fieldSpacer()
@@ -314,6 +344,5 @@ fun main() = Window(
     }
 }
 
-private fun validateInput(num: String): Boolean {
-    return true
-}
+private fun validateInput(num: String): Boolean = Regex("[+-]?\\d+(\\.\\d+)?([Ee][+-]?\\d+)?")
+    .matches(num)

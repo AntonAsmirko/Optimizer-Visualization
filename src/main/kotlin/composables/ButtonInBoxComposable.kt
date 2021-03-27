@@ -1,8 +1,7 @@
 package composables
 
 import LeftViewType
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,7 +52,11 @@ fun buttonInBox(
                 backgroundColor = if (!active.value) colors.secondary else colors.primaryVariant
             )
         ) {
-            Text(text)
+            Text(
+                text = text,
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                maxLines = 1
+            )
         }
     }
 }
