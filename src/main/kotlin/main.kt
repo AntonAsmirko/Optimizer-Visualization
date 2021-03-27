@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import composables.buttonInBox
 import composables.fieldSpacer
 import composables.plotView
-import composables.textCentred
 import firstLab.*
 import model.PlotData
 import model.interpolators.FunctionInterpolator
@@ -45,12 +44,12 @@ fun main() = Window(
     ) {
         var leftViewType by remember { mutableStateOf(LeftViewType.METHOD) }
         var func by remember { mutableStateOf(Constants.NONE_FUNC) }
-        var numBlobs by remember { mutableStateOf("") }
+        var numBlobs by remember { mutableStateOf("1000") }
         var lBound by remember { mutableStateOf("") }
         var rBound by remember { mutableStateOf("") }
         val functionInterpolator by remember { mutableStateOf(FunctionInterpolator()) }
         var functionDrawingPermitted by remember { mutableStateOf(false) }
-        var stepSize by remember { mutableStateOf("") }
+        var stepSize by remember { mutableStateOf("1") }
         var currentOptimizerStep by remember { mutableStateOf(0) }
         var message: String? = null
         var points: List<Offset>?
@@ -106,6 +105,7 @@ fun main() = Window(
                                 func = pair.key
                                 funcChanged = true
                                 leftViewType = LeftViewType.FUNCTION_INPUT
+                                optimizer?.array?.clear()
                             }
                         }
                     }
@@ -117,9 +117,11 @@ fun main() = Window(
                             leftViewType = LeftViewType.FUNCTION
                             func = Constants.NONE_FUNC
                             functionDrawingPermitted = false
-                            numBlobs = ""
+                            numBlobs = "1000"
                             lBound = ""
                             rBound = ""
+                            currentOptimizerStep = 0
+
                         }
                         fieldSpacer()
                         Text(
@@ -172,7 +174,13 @@ fun main() = Window(
                         }
                         if (functionDrawingPermitted) {
                             fieldSpacer()
-                            Text(text = "Step (num iterations)")
+                            Text(
+                                modifier = Modifier
+                                    .padding(30.dp)
+                                    .align(Alignment.CenterHorizontally),
+                                text = "Step (num iterations)",
+                                color = MaterialTheme.colors.onPrimary
+                            )
                             fieldSpacer()
                             OutlinedTextField(
                                 value = stepSize,
@@ -266,33 +274,39 @@ fun main() = Window(
                                             val xFlt = p.first.toFloat()
                                             Optimizer.Pair<Float>(
                                                 p.first.toFloat(),
-                                                functionsButtonsText[func]!!.invoke(xFlt)
+                                                p.second.toFloat()
                                             )
                                         }
                                     },
                                 currentOptimizerStep
                             )
-                        } ?: textCentred(
+                        } ?: Text(
                             modifier = Modifier
                                 .align(alignment = Alignment.CenterVertically)
-                                .weight(0.8f),
-                            Constants.MESSAGE_TROUBLES_WITH_OPTIMIZER
+                                .weight(0.8f)
+                                .padding(30.dp),
+                            text = Constants.MESSAGE_TROUBLES_WITH_OPTIMIZER,
+                            color = MaterialTheme.colors.onPrimary
                         )
                     } else {
-                        textCentred(
+                        Text(
                             modifier = Modifier
                                 .align(alignment = Alignment.CenterVertically)
-                                .weight(0.8f),
-                            message!!
+                                .weight(0.8f)
+                                .padding(30.dp),
+                            text = message!!,
+                            color = MaterialTheme.colors.onPrimary
                         )
                     }
                 }
             } else {
-                textCentred(
-                    Modifier
+                Text(
+                    modifier = Modifier
+                        .padding(30.dp)
                         .align(alignment = Alignment.CenterVertically)
                         .weight(0.8f),
-                    Constants.HINT_CHOOSE_FUNCTION
+                    text = Constants.HINT_CHOOSE_FUNCTION,
+                    color = MaterialTheme.colors.onPrimary
                 )
             }
         }
