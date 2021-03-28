@@ -12,6 +12,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.layout.WithConstraints
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,12 +22,9 @@ import composables.plotView
 import model.PlotData
 import model.interpolators.FunctionInterpolator
 import java.awt.image.BufferedImage
-import java.io.File
-import firstLab.Logger
 import firstLab.Optimizer
-import javax.imageio.ImageIO
 
-val appImg: BufferedImage = ImageIO.read(File("./img/appIcon.png"))
+//val appImg: BufferedImage = imageResource()
 
 val darkColors = darkColors(
     primary = Color(0xff37474f),
@@ -40,7 +38,7 @@ val darkColors = darkColors(
 
 fun main() = Window(
     title = Constants.TITLE,
-    icon = appImg,
+    // icon = appImg,
 ) {
     MaterialTheme(
         colors = darkColors

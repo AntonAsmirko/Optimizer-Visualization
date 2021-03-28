@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.4.20"
     id("org.jetbrains.compose") version "0.2.0-build132"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
 group = "me.antonasmirko"
@@ -24,6 +25,19 @@ dependencies {
 
 tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "11"
+}
+
+tasks.shadowJar{
+    manifest {
+        attributes["Main-Class"] = "MainKt"
+    }
+}
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "MainKt"
+    }
+    from(configurations.compileClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
 }
 
 compose.desktop {
